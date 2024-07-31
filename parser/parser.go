@@ -1,21 +1,12 @@
-package main
+package parser
 
 import (
-	"flag"
-	"fmt"
 	"os"
+	"path/filepath"
 
-	"gopkg.in/yaml.v3"
-
-	"github.com/ohaiibuzzle/archupgrade-go/parser"
 	"github.com/ohaiibuzzle/archupgrade-go/upgrade_spec"
+	"gopkg.in/yaml.v3"
 )
-
-func usage() {
-	fmt.Println("usage: archupgrade-go <filename>")
-	flag.PrintDefaults()
-	os.Exit(2)
-}
 
 func ProcessInclusions(spec *upgrade_spec.RawUpgradeSpec) (*upgrade_spec.UpgradeSpec, error) {
 	real_spec := &upgrade_spec.UpgradeSpec{
@@ -51,23 +42,35 @@ func ProcessInclusions(spec *upgrade_spec.RawUpgradeSpec) (*upgrade_spec.Upgrade
 	return real_spec, nil
 }
 
-func main() {
-	flag.Usage = usage
-	flag.Parse()
-
-	args := flag.Args()
-	if len(args) != 1 {
-		usage()
+func ParseSpec(path string) (*upgrade_spec.UpgradeSpec, error) {
+	// Here we change the working dir into the directory of the file
+	// (because it will use relative paths in its includes)
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(err)
 	}
-	// Simple stuff: Read a file from argv[0] and dump it
-	fmt.Printf("Reading from %s\n", args[0])
+	err = os.Chdir(filepath.Dir(path))
+	if err != nil {
+		panic(err)
+	}
+	defer os.Chdir(dir)
 
-	spec, err := parser.ParseSpec(args[0])
+	fp, err := os.Open(filepath.Base(path))
+	if err != nil {
+		panic(err)
+	}
+	defer fp.Close()
+
+	spec := upgrade_spec.RawUpgradeSpec{}
+	err = yaml.NewDecoder(fp).Decode(&spec)
 	if err != nil {
 		panic(err)
 	}
 
-	// Dump it
-	fmt.Printf("Dumping to stdout\n")
-	yaml.NewEncoder(os.Stdout).Encode(spec)
+	// Process inclusions
+	real_spec, err := ProcessInclusions(&spec)
+	if err != nil {
+		panic(err)
+	}
+	return real_spec, nil
 }
