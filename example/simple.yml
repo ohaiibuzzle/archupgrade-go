@@ -1,0 +1,60 @@
+version: '0.0.1-alpha'
+
+includes:
+
+upgrade:
+    phases:
+        - name: "first"
+          backend: libalpm
+          message: "Upgrading system libraries..."
+          preinstall:
+              - some_bash_commands
+              - do_some_patching
+          packages:
+              - package_a:
+                  url: 'https://archive.archlinux.org/p/package_a.tar.zst'
+                  hash: 'dQw4w9WgXcQ'
+                  hash-algorithm: 'sha256'
+              - package_b:
+                  url: 'https://archive.archlinux.org/p/package_b.tar.zst'
+                  hash: '_xc7tNbjnHM'
+                  hash-algorithm: 'sha256'
+          postinstall:
+              - some_more_bash_commands
+              - do_some_configurations
+          reboot: false
+        - name: "second"
+          backend: libalpm
+          message: "Upgrading desktop environment..."
+          preinstall:
+              - some_bash_commands
+              - do_some_patching
+          packages:
+              - package_c:
+                  url: 'https://archive.archlinux.org/p/package_c.tar.zst'
+                  hash: 'dQw4w9WgXcQ'
+                  hash-algorithm: 'sha256'
+              - package_d:
+                  url: 'https://archive.archlinux.org/p/package_d.tar.zst'
+                  hash: '_xc7tNbjnHM'
+                  hash-algorithm: 'sha256'
+          postinstall:
+              - some_more_bash_commands
+              - do_some_configurations
+          reboot: true
+
+finalize:
+    shell:
+        - some_shell_command
+    file_write:
+        - path: /etc/os-release
+          content: |
+            VERSION="10.0 (Firefly)"
+            VERSION_ID=10.0
+            VERSION_CODENAME=firefly
+            BUILD_ID=20240618
+            IMAGE_ID=firefly-shipping-final
+    file_remove:
+        - /etc/pacman.d/mirrorlist
+    clean-caches: true
+    reboot: true
