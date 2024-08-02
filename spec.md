@@ -73,7 +73,7 @@ said nested specifications **shall** only get executed once at the point where t
 ## Package installation and configurations
 An upgrade as specified by `archupgrade` shall run in multiple phases to account for any inconsistencies that may arise from upgrading from older package revisions. For example, it should handle anything on the [Arch Linux News](https://archlinux.org/news/) that would normally requires manual intervention (for example, [JDK 21](https://archlinux.org/news/incoming-changes-in-jdk-jre-21-packages-may-require-manual-intervention/)). 
 
-While not required, it is recommended that that each phase
+While not required, it is recommended that that each phase results in a still functional system, in case an expected or unexpected host reset occurs
 
 For this purpose, we propose the following format:
 ```yml
@@ -86,14 +86,14 @@ upgrade:
               - some_bash_commands
               - do_some_patching
           packages:
-              - package_a:
-                  url: 'https://archive.archlinux.org/p/package_a.tar.zst'
-                  hash: 'dQw4w9WgXcQ'
-                  hash-algorithm: 'sha256'
-              - package_b:
-                  url: 'https://archive.archlinux.org/p/package_b.tar.zst'
-                  hash: '_xc7tNbjnHM'
-                  hash-algorithm: 'sha256'
+              - name: "package_a"
+                url: 'https://archive.archlinux.org/p/package_a.tar.zst'
+                hash: 'dQw4w9WgXcQ'
+                hash-algorithm: 'sha256'
+              - name: "package_b"
+                url: 'https://archive.archlinux.org/p/package_b.tar.zst'
+                hash: '_xc7tNbjnHM'
+                hash-algorithm: 'sha256'
           postinstall:
               - some_more_bash_commands
               - do_some_configurations
@@ -105,18 +105,19 @@ upgrade:
               - some_bash_commands
               - do_some_patching
           packages:
-              - package_c:
-                  url: 'https://archive.archlinux.org/p/package_c.tar.zst'
-                  hash: 'dQw4w9WgXcQ'
-                  hash-algorithm: 'sha256'
-              - package_d:
-                  url: 'https://archive.archlinux.org/p/package_d.tar.zst'
-                  hash: '_xc7tNbjnHM'
-                  hash-algorithm: 'sha256'
+              - name: "package_c"
+                url: 'https://archive.archlinux.org/p/package_c.tar.zst'
+                hash: 'dQw4w9WgXcQ'
+                hash-algorithm: 'sha256'
+              - name: "package_d"
+                url: 'https://archive.archlinux.org/p/package_d.tar.zst'
+                hash: '_xc7tNbjnHM'
+                hash-algorithm: 'sha256'
           postinstall:
               - some_more_bash_commands
               - do_some_configurations
           reboot: true
+
 ```
 ### Directives
 - `required-space`: Specifies an amount of space that would be necessary on the `root` directory of the target system for the upgrade to be performed successfully
@@ -130,6 +131,8 @@ upgrade:
     - `preinstall`: An array of shell command that should be run before packages in this phase are installed
 
     - `packages`: An array of packages that shall be installed on the system. Each `package` is an object that specifies
+
+        - `name`: The package name to be installed.
 
         - `url`: A URI to the package archive itself. This may be `https://` or `file://` for remote and local archives, respectively.
 

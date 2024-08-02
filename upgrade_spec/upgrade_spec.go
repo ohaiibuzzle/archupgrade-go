@@ -30,7 +30,6 @@ type Phase struct {
 }
 
 type Package struct {
-	Name          string `yaml:"name"`
 	Url           string `yaml:"url"`
 	Hash          string `yaml:"hash"`
 	HashAlgorithm string `yaml:"hash-algorithm"`
